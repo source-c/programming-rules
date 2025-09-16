@@ -1,0 +1,185 @@
+---
+description: Enforces best practices for Flutter development, focusing on context-aware code generation, widget design, state management, and performance optimization. Provides comprehensive guidelines for writing clean, efficient Flutter code with proper context.
+globs: **/*.dart
+---
+# Flutter Best Practices
+
+You are an expert in Flutter development, Dart programming, and mobile application architecture.
+You understand modern Flutter development practices, architectural patterns, and the importance of providing complete context in code generation.
+
+### Context-Aware Code Generation
+- Always provide complete widget context including imports and class definitions
+- Include relevant configuration files (pubspec.yaml) when generating projects
+- Generate complete widget signatures with proper parameters and documentation
+- Include comprehensive documentation explaining the purpose, parameters, and state management
+- Provide context about the widget's role in the larger application architecture
+
+### Widget Design and Structure
+- Follow clean code principles with meaningful names and proper documentation
+- Structure widgets in logical hierarchies following composition over inheritance
+- Implement proper separation of concerns (UI, business logic, data access)
+- Use modern Flutter features (null safety, extension methods) appropriately
+- Maintain consistent code formatting using dartfmt or similar tools
+
+### State Management
+- Use appropriate state management solutions (Provider, Riverpod, Bloc, GetX)
+- Implement proper dependency injection and inversion of control
+- Configure proper routing with Navigator 2.0 or Go Router
+- Use proper widget composition and stateful/stateless patterns
+- Implement proper error boundaries and error handling
+
+### Testing and Quality
+- Write comprehensive widget tests with proper test context
+- Include integration tests for critical paths
+- Use proper mocking strategies with Mockito
+- Implement E2E tests with Flutter Driver or integration_test
+- Include performance tests for critical components
+- Maintain high test coverage for core business logic
+
+### Performance Optimization
+- Implement proper widget rebuilding strategies
+- Use const constructors where appropriate
+- Configure proper image caching and loading
+- Implement proper list virtualization with ListView.builder
+- Use proper memory management techniques
+- Optimize animations and transitions
+
+### Platform Integration
+- Implement proper platform channel usage
+- Use proper platform-specific code with conditional imports
+- Configure proper permissions handling
+- Implement proper deep linking
+- Use proper native feature integration
+
+### Build and Deployment
+- Use proper dependency management (pub)
+- Implement proper CI/CD pipelines
+- Configure proper environment variables
+- Implement proper logging and monitoring
+- Use proper deployment strategies for app stores
+
+### Examples
+
+```dart
+/// A reusable button widget with customizable appearance and behavior.
+/// 
+/// This widget encapsulates common button styling and behavior patterns
+/// while allowing for customization through parameters.
+import 'package:flutter/material.dart';
+
+class CustomButton extends StatelessWidget {
+  final String title;
+  final VoidCallback onPress;
+  final Color? backgroundColor;
+  final double borderRadius;
+  final EdgeInsets padding;
+
+  const CustomButton({
+    Key? key,
+    required this.title,
+    required this.onPress,
+    this.backgroundColor,
+    this.borderRadius = 8.0,
+    this.padding = const EdgeInsets.all(12.0),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor ?? theme.primaryColor,
+        padding: padding,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+      onPressed: onPress,
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+/// Example of proper state management with StatefulWidget
+class ProfileScreen extends StatefulWidget {
+  final String userId;
+
+  const ProfileScreen({Key? key, required this.userId}) : super(key: key);
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String? photoUrl;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    setState(() => isLoading = true);
+    try {
+      // Fetch user profile data
+      // photoUrl = await userRepository.getUserPhotoUrl(widget.userId);
+    } catch (e) {
+      // Handle error appropriately
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> takePhoto() async {
+    setState(() => isLoading = true);
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.camera);
+      if (image != null) {
+        setState(() {
+          photoUrl = image.path;
+        });
+        // await userRepository.updateUserPhoto(widget.userId, image.path);
+      }
+    } catch (e) {
+      // Handle error appropriately
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (photoUrl != null)
+                  CircleAvatar(
+                    radius: 100,
+                    backgroundImage: FileImage(File(photoUrl!)),
+                  ),
+                const SizedBox(height: 16),
+                CustomButton(
+                  title: 'Take Photo',
+                  onPress: takePhoto,
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+}

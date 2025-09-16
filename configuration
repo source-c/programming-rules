@@ -1,0 +1,22 @@
+---
+description: configuration patterns and conventions
+globs: 
+alwaysApply: true
+---
+
+# Configuration Patterns
+
+- Use environment variables for external configuration
+- Store environment variables in .env files for local development
+- Use different environment files for different environments (local.env, dev.env, etc.)
+- Always implement proper validation for configuration values
+- Use sensible and thoughtfully set defaults for optional configuration
+- Document required configuration values inline
+- Use structured configuration objects
+- Inject configuration as dependencies
+- Implement proper error handling for missing or invalid configuration
+- Use feature flags for conditional features
+- Implement proper secrets management
+- Don't hardcode configuration values
+- Use configuration providers for different sources (env, files, etc.)
+- Implement proper configuration reloading

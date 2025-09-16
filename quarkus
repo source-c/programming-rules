@@ -1,0 +1,87 @@
+---
+description: Quarkus Code Style, Patterns, and Generics
+globs:
+alwaysApply: false
+---
+
+# Code Style and Patterns
+
+- Write clean, efficient, and well-documented Java code using Quarkus best practices
+- Follow Jakarta EE and MicroProfile conventions, ensuring clarity in package organisation
+- Use descriptive method and variable names following camelCase convention
+- Use strict typing, avoid `?` and `Object`, or its analogues when possible
+- Structure the application with consistent organisation (e.g., resources, services, repositories, entities, configuration)
+- Always follow DRY, SOLID and KISS principles
+- Write unit tests for all public/exported methods and functions
+- Document classes, methods and logical blocks
+- Very critical code sections (that may lead to service crashes for instance) should always have a comment started with `ATTN:` and followed by explanation. Don't abuse it.
+- Prefer small CDIs over complex solid classes where possible
+
+# Tools definitions
+
+You are an expert in Java programming, Quarkus framework, Jakarta EE, MicroProfile, Mutiny, Lombok,
+GraalVM native builds, Vert.x for event-driven applications, Maven, JUnit, and related Java technologies.
+
+# Quarkus framework specific rules
+
+- Leverage Quarkus Dev Mode for faster development cycles
+- Use Quarkus and Lombok annotations (e.g., @ApplicationScoped, @Inject, @ConfigProperty, @Slf4j) effectively
+- Implement build-time optimisations using Quarkus extensions and best practices
+- Configure native builds with GraalVM for optimal performance (e.g., use the quarkus-maven-plugin)
+- Prefer functional approach over iterative and imperative
+- Use PascalCase for class names (e.g., UserResource, OrderService)
+- Use camelCase for method and variable names (e.g., findUserById, isOrderValid)
+- Use ALL_CAPS for constants (e.g., MAX_RETRY_ATTEMPTS, DEFAULT_PAGE_SIZE)
+- Use Java 24 or later features where appropriate (e.g., records, sealed classes)
+- Utilise Quarkus BOM for dependency management, ensuring consistent versions
+- Integrate MicroProfile APIs (e.g., Config, Health, Metrics) for enterprise-grade applications
+- Use Vert.x where event-driven or reactive patterns are needed (e.g., messaging, streams)
+- Store internal configuration in application.properties
+- Use @ConfigProperty for type-safe configuration injection
+- Rely on Quarkus profiles (e.g., dev, test, prod) for environment-specific configurations
+- Use CDI annotations (@Inject, @Named, @Singleton, etc.) for clean and testable code
+- Prefer constructor injection or method injection over field injection for better testability where possible
+
+# Testing
+
+- Write tests with latest stable JUnit version and use @QuarkusTest for integration tests
+- Use rest-assured for testing REST endpoints in Quarkus (e.g., @QuarkusTestResource)
+- Implement in-memory persistence or test-containers for integration testing if needed
+
+# Performance and Scalability
+
+- Optimise for native image creation using the quarkus.native.* properties if possible
+- Use @CacheResult, @CacheInvalidate (MicroProfile or Quarkus caching extensions) for caching
+- Implement reactive patterns with Vert.x and/or Mutiny for non-blocking I/O
+- Recomment database indexing and query optimization for performance gains in comments
+
+# Security
+
+- Use Quarkus Security for authentication and authorisation (e.g., quarkus-oidc, quarkus-smallrye-jwt)
+- Integrate MicroProfile JWT for token-based security if applicable
+- Handle CORS configuration and other security headers via Quarkus extensions
+
+# Logging and Monitoring
+
+- Use the Quarkus logging subsystem (e.g., quarkus-logging-json) with SLF4J or JUL bridging
+- Implement MicroProfile Health, Metrics, and OpenTracing for monitoring and diagnostics
+- Use proper log levels (ERROR, WARN, INFO, DEBUG) and structured logging where possible
+
+# API Documentation
+
+- Use Quarkus OpenAPI extension (quarkus-smallrye-openapi) for API documentation
+- Provide detailed OpenAPI annotations for resources, operations, and schemas
+
+# Build and Deployment
+
+- Use Maven with Quarkus plugins for building and packaging
+- Configure multi-stage Docker builds for optimised container images when applicable
+- Employ proper profiles and environment variables for different deployment targets (dev, test, prod)
+- Optimise for GraalVM native image creation to reduce memory footprint and startup time if requested
+
+# Follow best practices for
+
+- RESTful API design (proper use of HTTP methods and status codes)
+- Micro-services architecture, leveraging Quarkus for fast startup and minimal memory usage
+- Asynchronous and reactive processing using Vert.x or Mutiny for efficient resource usage
+- Adhere to SOLID principles to ensure high cohesion and low coupling in developing Quarkus application

@@ -1,0 +1,162 @@
+---
+description: Enforces best practices for Python development, focusing on context-aware code generation, modern patterns, and maintainable architecture. Provides comprehensive guidelines for writing clean, efficient, and secure Python code with proper context.
+globs: **/*.py
+---
+# Python Best Practices
+
+You are an expert in Python programming, AsyncIO, Django, Flask, FastAPI, and related Python technologies.
+You understand modern Python development practices, architectural patterns, and the importance of providing complete context in code generation.
+
+### Context-Aware Code Generation
+- Always provide complete module context including imports and type hints
+- Include relevant configuration files (requirements.txt, pyproject.toml) when generating projects
+- Generate complete function signatures with proper parameters, return types, and docstrings
+- Include comprehensive docstrings following Google or NumPy style
+- Provide context about the module's role in the larger system architecture
+
+### Code Style and Structure
+- Follow PEP 8 style guide and clean code principles
+- Structure code in logical modules following domain-driven design
+- Implement proper separation of concerns (views, models, services, utils)
+- Use modern Python features (type hints, dataclasses, async/await) appropriately
+- Maintain consistent code formatting using Black or similar tools
+- Use proper package structure and __init__.py files
+
+### Framework Best Practices
+- Use AsyncIO/Django/Flask/FastAPI best practices and patterns
+- Implement proper dependency injection and inversion of control
+- Configure proper routing and middleware
+- Use proper ORM patterns and database migrations
+- Implement proper error handling and logging
+- Configure proper testing setup (pytest, unittest)
+
+### Testing and Quality
+- Write comprehensive unit tests with proper test context
+- Include integration tests for critical paths
+- Use proper mocking strategies with unittest.mock
+- Implement E2E tests with pytest
+- Include performance tests for critical components
+- Maintain high test coverage for core business logic
+
+### Security and Performance
+- Implement proper input validation and sanitization
+- Use secure authentication and token management
+- Configure proper CORS and CSRF protection
+- Implement rate limiting and request validation
+- Use proper caching strategies
+- Optimize database queries and indexes
+
+### API Design
+- Follow RESTful principles with proper HTTP methods
+- Use proper status codes and error responses
+- Implement proper versioning strategies
+- Document APIs using OpenAPI/Swagger
+- Include proper request/response validation
+- Implement proper pagination and filtering
+
+### Database and Data Access
+- When feasible avoid using ORMs
+- Otherwise use proper ORM patterns (Django ORM, SQLAlchemy)
+- Implement proper transaction management
+- Use database migrations (Alembic, Django Migrations etc)
+- Optimize queries and use proper indexing
+- Implement proper connection pooling
+- Use proper database isolation levels
+
+### Build and Deployment
+- Prefer PDM over other alternatives
+- Otherwise use proper dependency management (pip, poetry)
+- Implement proper CI/CD pipelines
+- Use Docker for containerization
+- Configure proper environment variables
+- Implement proper logging and monitoring
+- Use proper deployment strategies
+
+### Examples
+
+```python
+"""
+UserService handles user-related operations.
+Provides methods for user management and authentication.
+"""
+from typing import Optional
+from dataclasses import dataclass
+from functools import lru_cache
+
+@dataclass
+class User:
+  id: int
+  email: str
+
+class UserService:
+  def __init__(self, api_client, cache):
+    self.api_client = api_client
+    self.cache = cache
+
+  @lru_cache(maxsize=100)
+  async def find_user_by_email(self, email: str) -> Optional[User]:
+    """
+    Finds a user by their email address.
+
+    Args:
+        email: The email address to search for
+
+    Returns:
+        Optional[User]: The user if found, None otherwise
+
+    Raises:
+        ApiError: If the request fails
+    """
+    try:
+      cached_user = await self.cache.get(f"user:{email}")
+      if cached_user:
+        return User(**cached_user)
+
+      user_data = await self.api_client.get(f"/users?email={email}")
+      if user_data:
+        user = User(**user_data)
+        await self.cache.set(f"user:{email}", user_data)
+        return user
+      return None
+    except Exception as e:
+      raise ApiError(f"Failed to find user by email: {str(e)}")
+
+"""
+Tests for UserService functionality.
+"""
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+
+@pytest.mark.asyncio
+class TestUserService:
+  @pytest.fixture
+  def service(self):
+    api_client = AsyncMock()
+    cache = AsyncMock()
+    return UserService(api_client, cache)
+
+  async def test_find_user_by_email_when_user_exists(self, service):
+    # Given
+    email = "test@example.com"
+    user_data = {"id": 1, "email": email}
+    service.api_client.get.return_value = user_data
+
+    # When
+    result = await service.find_user_by_email(email)
+
+    # Then
+    assert result is not None
+    assert result.email == email
+    service.api_client.get.assert_called_once_with(f"/users?email={email}")
+
+  async def test_find_user_by_email_when_user_not_found(self, service):
+    # Given
+    email = "nonexistent@example.com"
+    service.api_client.get.return_value = None
+
+    # When
+    result = await service.find_user_by_email(email)
+
+    # Then
+    assert result is None
+    service.api_client.get.assert_called_once_with(f"/users?email={email}")
