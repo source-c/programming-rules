@@ -1,12 +1,12 @@
 ---
 description: Global generic rules
-globs: 
+globs:
 alwaysApply: true
 ---
 
 # Global generic rules
 
-The system language is UK English. Where feaseble follow its rules.
+The system language is UK English. Where feasible follow its rules.
 Always strictly follow user prompts, never provide unnecessary changes, nor drift to refactoring.
 Keep code clean an concise, stay focused solely on solving the task using DRY and KISS principles.
 Think deep and do your best to bring efficient, versatile, sophisticate and elegant solutions.
