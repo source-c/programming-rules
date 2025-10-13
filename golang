@@ -1,0 +1,288 @@
+---
+description: Enforces best practices for Go development, focusing on context-aware code generation, modern patterns, and maintainable architecture. Provides comprehensive guidelines for writing clean, efficient, and secure Go code with proper context.
+globs: **/*.go
+---
+# Go Best Practices
+
+You are an expert in Go programming and related technologies.
+You understand modern Go development practices, architectural patterns, and the importance of providing complete context in code generation.
+
+### Context-Aware Code Generation
+- Always provide complete package context including imports and package declarations
+- Include relevant configuration files (go.mod, go.sum) when generating projects
+- Generate complete function signatures with proper parameters and return values
+- Include comprehensive GoDoc comments explaining the purpose, parameters, and return values
+- Provide context about the package's role in the larger system architecture
+- Follow proper package organization and module structure
+
+### Code Style and Structure
+- Follow Go style guide and clean code principles
+- Structure code in logical packages following domain-driven design
+- Implement proper separation of concerns (handlers, services, repositories)
+- Use modern Go features (generics, error wrapping, context) appropriately
+- Maintain consistent code formatting using gofmt
+- Use proper interface design and composition
+- Implement proper error handling with custom error types
+- Use proper logging with structured data
+- Use strict typing, avoid `any` or its analogues when possible
+- Follow DRY, SOLID and KISS principles
+- Write unit tests for all public/exported methods and functions
+- Document functions, methods and logical blocks
+- Critical code sections should always have a comment started with `ATTN:` and followed by explanation
+
+### Type System and Interfaces
+- Use proper type definitions and interfaces
+- Implement proper interface segregation
+- Use proper type assertions and type switches
+- Implement proper custom types and methods
+- Use proper type embedding and composition
+- Implement proper type constraints with generics
+- Use proper type aliases when appropriate
+- Implement proper type safety patterns
+
+### Testing and Quality
+- Write comprehensive unit tests with proper test context
+- Include integration tests for critical paths
+- Use proper table-driven tests
+- Implement proper test helpers and utilities
+- Include performance tests for critical components
+- Maintain high test coverage for core business logic
+- Use proper test data factories
+- Implement proper test doubles
+- Use proper test organization with test packages
+
+### Dependency Injection
+- Use constructor injection pattern for dependencies
+- Define interfaces for all services and providers
+- Implement providers in the infrastructure layer
+- Wire up dependencies in the cmd layer
+- Use functional options pattern for configurable components
+- Keep service constructors simple and focused
+- Avoid global state and singletons
+- Use context.Context for request-scoped dependencies
+- Inject tracer for distributed tracing
+- Inject logger for structured logging
+- Use closer.Closer for graceful shutdown
+- Separate interface from implementation
+
+### Error Handling
+- Domain-specific errors are to be separated (i.g. defined in `internal/domain/errors.go`)
+- Use custom error types for domain-specific errors
+- Always check errors and propagate them up the call stack
+- Use meaningful error messages that describe what went wrong
+- In API handlers (if any), map domain errors to appropriate HTTP status codes
+- Use structured logging for errors with relevant context
+- Don't expose internal errors to API clients
+- Wrap errors with additional context when crossing layer boundaries
+- Use sentinel errors for expected error conditions
+- In workflows and activities, use appropriate error types for retryable vs. non-retryable errors
+
+### Error Prevention
+- Always verify type consistency
+- Check for potential NPE (Null Pointer Exception or its analogues)
+- Validate against business rules
+- Always ensure tracability - error handling and logging
+
+### Logging and Tracing Patterns
+- Use structured logging with log fields
+- Inject logger as a dependency
+- Use appropriate log levels (debug, info, warn, error)
+- Include relevant context in log messages
+- Use OpenTelemetry for distributed tracing
+- Inject tracer as a dependency
+- Create spans for important operations
+- Add attributes to spans for context
+- Propagate trace context across service boundaries
+- Use correlation IDs to link related operations
+- Log errors with stack traces
+- Implement proper error context
+- Use middleware for request/response logging
+- Implement proper log rotation and retention
+
+### Security and Performance
+- Implement proper input validation and sanitization
+- Use secure authentication and token management
+- Configure proper CORS and CSRF protection
+- Implement rate limiting and request validation
+- Use proper caching strategies
+- Optimize memory usage and garbage collection
+- Implement proper error handling and logging
+- Use proper data validation and sanitization
+- Implement proper access control
+
+### API Design
+- Follow RESTful principles with proper HTTP methods
+- Use proper status codes and error responses
+- Implement proper versioning strategies
+- Document APIs using OpenAPI/Swagger
+- Include proper request/response validation
+- Implement proper pagination and filtering
+- Use proper serialization and deserialization
+- Implement proper rate limiting
+- Use proper API authentication
+
+### Concurrency and Parallelism
+- Use proper goroutine patterns
+- Implement proper channel communication
+- Use proper sync primitives
+- Implement proper context cancellation
+- Use proper worker pools
+- Implement proper error handling in goroutines
+- Use proper resource cleanup
+- Implement proper backpressure
+- Use proper concurrent data structures
+
+### Build and Deployment
+- Use proper module management
+- Implement proper CI/CD pipelines
+- Use Docker for containerization
+- Configure proper environment variables
+- Implement proper logging and monitoring
+- Use proper deployment strategies
+- Implement proper backup strategies
+- Use proper monitoring tools
+- Implement proper error tracking
+
+### Examples
+
+```go
+// Package user provides user-related operations.
+// It handles user management and authentication.
+package user
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+)
+
+// UserService handles user-related operations.
+type UserService struct {
+	apiClient APIClient
+	cache     Cache
+	logger    *log.Logger
+}
+
+// NewUserService creates a new UserService instance.
+func NewUserService(apiClient APIClient, cache Cache, logger *log.Logger) *UserService {
+	if logger == nil {
+		logger = log.Default()
+	}
+	return &UserService{
+		apiClient: apiClient,
+		cache:     cache,
+		logger:    logger,
+	}
+}
+
+// FindUserByEmail finds a user by their email address.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeouts
+//   - email: the email address to search for
+//
+// Returns:
+//   - *User: the user if found
+//   - error: any error that occurred
+func (s *UserService) FindUserByEmail(ctx context.Context, email string) (*User, error) {
+	// Check cache first
+	cachedUser, err := s.cache.Get(ctx, fmt.Sprintf("user:%s", email))
+	if err == nil && cachedUser != "" {
+		var user User
+		if err := json.Unmarshal([]byte(cachedUser), &user); err == nil {
+			return &user, nil
+		}
+	}
+
+	// Fetch from API
+	user, err := s.apiClient.GetUser(ctx, email)
+	if err != nil {
+		s.logger.Printf("Failed to find user by email: %v", err)
+		return nil, fmt.Errorf("failed to find user by email: %w", err)
+	}
+
+	// Cache the result
+	if user != nil {
+		userJSON, err := json.Marshal(user)
+		if err == nil {
+			_ = s.cache.Set(ctx, fmt.Sprintf("user:%s", email), string(userJSON))
+		}
+	}
+
+	return user, nil
+}
+
+// Tests for UserService functionality.
+func TestUserService_FindUserByEmail(t *testing.T) {
+	tests := []struct {
+		name          string
+		email         string
+		cacheResponse string
+		apiResponse   *User
+		apiError      error
+		wantUser      *User
+		wantError     bool
+	}{
+		{
+			name:          "user found in cache",
+			email:         "test@example.com",
+			cacheResponse: `{"id":1,"email":"test@example.com"}`,
+			wantUser:      &User{ID: 1, Email: "test@example.com"},
+		},
+		{
+			name:      "user found via API",
+			email:     "test@example.com",
+			apiResponse: &User{ID: 1, Email: "test@example.com"},
+			wantUser:  &User{ID: 1, Email: "test@example.com"},
+		},
+		{
+			name:      "user not found",
+			email:     "nonexistent@example.com",
+			apiResponse: nil,
+			wantUser:  nil,
+		},
+		{
+			name:      "API error",
+			email:     "test@example.com",
+			apiError:  errors.New("API error"),
+			wantError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup
+			ctx := context.Background()
+			apiClient := &mockAPIClient{
+				getUserResponse: tt.apiResponse,
+				getUserError:   tt.apiError,
+			}
+			cache := &mockCache{
+				getResponse: tt.cacheResponse,
+			}
+			service := NewUserService(apiClient, cache, nil)
+
+			// Execute
+			user, err := service.FindUserByEmail(ctx, tt.email)
+
+			// Verify
+			if tt.wantError {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if !reflect.DeepEqual(user, tt.wantUser) {
+				t.Errorf("got user %v, want %v", user, tt.wantUser)
+			}
+		})
+	}
+}
